@@ -4,11 +4,37 @@
   become: true
   tasks:
 
-  - name: install apache2 and php package.
-    package:
+  - name: install updates (CentOS)
+    yum: 
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: install updates (Debian Distros.)
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu" 
+
+- hosts: web_servers
+  become: true
+  tasks:
+    
+  - name: install apache2 and php package on Debian based distros.
+    apt:
       name: 
-        - "{{ apache_package }}"
-        - "{{ php_package }}"
+        - apache2
+        - libapache2-mod-php
+        - faketime
       state: latest
       update_cache: yes
-
+    when: ansible_distribution == "Ubuntu"
+  
+  - name: install httpd and php package on CentOS distros.
+    yum:
+      name:
+        - httpd
+        - php
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
