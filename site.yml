@@ -72,6 +72,23 @@
       enabled: yes
     when: ansible_distribution == "CentOS"
 
+  - name: change webmaster email address
+    tags: apache,centos,httpd
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin root@localhost
+      backup: yes
+    when: ansible_distribution == "CentOS"
+    register: httpd
+
+  - name: restart httpd service on (CentOS)
+    tags: restart,apache,httpd,centos
+    service:
+      name: httpd
+      state: restarted
+    when: httpd.changed
+
   - name: copy default html file for site
     tags: apache,apache2,httpd
     copy:
