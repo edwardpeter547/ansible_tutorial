@@ -1,49 +1,28 @@
 
   - name: install apache2 and php package on Debian based distros.
     tags: apache,php,ubuntu
-    apt:
+    package:
       name: 
-        - apache2
-        - libapache2-mod-php
-        - faketime
+        - "{{ apache_package_name }}"
+        - "{{ php_package_name }}"
       state: latest
-      update_cache: yes
-    when: ansible_distribution == "Ubuntu"
-  
-  - name: install httpd and php package on CentOS distros.
-    tags: apache,centos,httpd,php
-    yum:
-      name:
-        - httpd
-        - php
-      state: latest
-      update_cache: yes
-    when: ansible_distribution == "CentOS"
 
   - name: start httpd service on (CentOS)
     tags: start,apache,httpd,centos
     service:
-      name: httpd
+      name: "{{ apache_service }}"
       state: started
       enabled: yes
-    when: ansible_distribution == "CentOS"
 
   - name: change webmaster email address
     tags: apache,centos,httpd
     lineinfile:
       path: /etc/httpd/conf/httpd.conf
       regexp: '^ServerAdmin'
-      line: ServerAdmin root@localhost
+      line: ServerAdmin root@localhost.com
       backup: yes
     when: ansible_distribution == "CentOS"
-    register: httpd
-
-  - name: restart httpd service on (CentOS)
-    tags: restart,apache,httpd,centos
-    service:
-      name: httpd
-      state: restarted
-    when: httpd.changed
+    notify: restart_apache
 
   - name: copy default html file for site
     tags: apache,apache2,httpd
