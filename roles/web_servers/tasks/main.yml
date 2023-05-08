@@ -1,0 +1,56 @@
+
+  - name: install apache2 and php package on Debian based distros.
+    tags: apache,php,ubuntu
+    apt:
+      name: 
+        - apache2
+        - libapache2-mod-php
+        - faketime
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+  
+  - name: install httpd and php package on CentOS distros.
+    tags: apache,centos,httpd,php
+    yum:
+      name:
+        - httpd
+        - php
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: start httpd service on (CentOS)
+    tags: start,apache,httpd,centos
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: change webmaster email address
+    tags: apache,centos,httpd
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin root@localhost
+      backup: yes
+    when: ansible_distribution == "CentOS"
+    register: httpd
+
+  - name: restart httpd service on (CentOS)
+    tags: restart,apache,httpd,centos
+    service:
+      name: httpd
+      state: restarted
+    when: httpd.changed
+
+  - name: copy default html file for site
+    tags: apache,apache2,httpd
+    copy:
+      src: files/default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+  
